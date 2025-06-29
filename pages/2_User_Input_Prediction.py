@@ -52,11 +52,14 @@ stress = st.slider("Stress Level", 1, 10, 5)
 st.markdown("#### BMI Category")
 st.markdown(
     """
-    *Underweight*: BMI less than **18.5**  
-    *Healthy Weight*: BMI between **18.5 and 24.9**  
-    *Overweight*: BMI between **25 and 29.9**
-    """
+    *Underweight*: BMI less than **18.5**  <br>
+    *Normal*: BMI between **18.5 and 24.9**  <br>
+    *Overweight*: BMI between **25 and 29.9**  <br>
+    *Obese*: BMI of **30 or higher**
+    """,
+    unsafe_allow_html=True
 )
+
 bmi = st.selectbox("BMI Category", ["Underweight", "Normal", "Overweight", "Obese"])
 
 hr = st.number_input("Your heart rate", min_value=50, max_value=250, value=90, step=1)

@@ -119,6 +119,8 @@ def evaluate_chromosomes(chromosomes_list, scaler, features_to_use, knn_model, a
 
 
         # Tangani missing value
+        
+        imputer = SimpleImputer(strategy='constant', fill_value=0)
         X_input = imputer.fit_transform(X_input)  # pastikan X_input jadi array 2D dan tidak mengandung NaN
 
         # Prediksi oleh KNN
@@ -138,7 +140,9 @@ def evaluate_chromosomes(chromosomes_list, scaler, features_to_use, knn_model, a
             'knn_fitness': knn_fitness,
             'ann_pred': ann_pred,
             'ann_fitness': ann_fitness,
-            'avg_fitness': (ann_weight * ann_fitness) + (knn_weight * knn_fitness)
+            'avg_fitness': (ann_weight * ann_fitness) + (knn_weight * knn_fitness),
+            'ann_label': y_map_inv.get(ann_pred, ann_pred),  # Map prediction to label if you have a mapping
+            'knn_label': y_map_inv.get(knn_pred, knn_pred)
         })
 
     return results
@@ -202,10 +206,7 @@ def mutate(chromosome, mutation_rate=0.1):
     for key in mutated:
         if random.random() < mutation_rate:
             # Mutasi berdasarkan domain + batas target class normal
-            if key == 'Age':
-                mutated[key] = max(18, min(80, mutated[key] + random.randint(-5, 5)))
-
-            elif key == 'Sleep Duration':
+            if key == 'Sleep Duration':
                 mutated[key] = round(
                     min(max_normal_values['Sleep Duration'],
                         max(min_normal_values['Sleep Duration'],
@@ -241,15 +242,6 @@ def mutate(chromosome, mutation_rate=0.1):
                             mutated[key] + random.randint(-3, 3)))
                 )
 
-            elif key == 'Quality of Sleep':
-                mutated[key] = max(1, min(10, mutated[key] + random.choice([-1, 0, 1])))
-
-            elif key == 'Stress Level':
-                mutated[key] = max(1, min(10, mutated[key] + random.choice([-1, 0, 1])))
-
-            elif key == 'Heart Rate':
-                mutated[key] = max(50, min(100, mutated[key] + random.randint(-5, 5)))
-
             elif key == 'BMI Category':
                 # Enforce within BMI category 0 (Normal), 1 (Under), 2 (Over)
                 categories = ['Underweight', 'Normal', 'Overweight']
@@ -258,18 +250,7 @@ def mutate(chromosome, mutation_rate=0.1):
                 else:
                     idx = 1  # default to Normal if unknown
                 mutated[key] = categories[(idx + random.choice([-1, 1])) % len(categories)]
-
-            elif key == 'Gender':
-                mutated[key] = 'Female' if mutated[key] == 'Male' else 'Male'
-
-            elif key == 'Occupation':
-                # Boleh tetap random karena tidak ada nilai optimal khusus
-                occupations = [
-                    'Manager', 'Engineer', 'Doctor', 'Lawyer', 'Accountant',
-                    'Software Engineer', 'Scientist', 'Teacher', 'Nurse', 'Salesperson',
-                    'Sales Representative'
-                ]
-                mutated[key] = random.choice(occupations)
+                
 
     return mutated
 
@@ -321,22 +302,8 @@ def run_genetic_algorithm():
     knn = st.session_state['knn_model']
     ann_model = st.session_state['ann_model']
 
-    user_input_dict = st.session_state.get('user_input_example')
-    if not user_input_dict:
-        user_input_dict = {
-            'Gender': 0,
-            'Age': 30,
-            'Occupation': 1,
-            'Sleep Duration': 6.0,
-            'Quality of Sleep': 5,
-            'Physical Activity Level': 30,
-            'Stress Level': 5,
-            'BMI Category': 0,
-            'Heart Rate': 85,
-            'Daily Steps': 6000,
-            'Systolic_BP': 130,
-            'Diastolic_BP': 85
-        }
+    user_input_dict = st.session_state.get('user_input')
+    
 
     generated_chromosomes = generate_random_chromosomes(user_input_dict, n=6)
     evaluated_population = evaluate_chromosomes(generated_chromosomes, scaler, features_to_use, knn, ann_model, target_class=0)
@@ -355,4 +322,4 @@ def run_genetic_algorithm():
         target_class=0
     )
     best_final = max(final_population, key=lambda x: x['avg_fitness'])
-    return best, best_final['ann_label'], {'final': best_final}
+    return best, best_final['ann_label'], {'final': best_final}, user_input_dict
