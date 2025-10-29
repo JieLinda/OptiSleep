@@ -14,7 +14,7 @@ import os
 
 # === DATA PREPROCESSING ===
 df = pd.read_csv('data/Sleep_health_and_lifestyle_dataset.csv')
-df['Sleep Disorder'].fillna('Normal', inplace=True)
+df['Sleep Disorder'] = df['Sleep Disorder'].fillna('Normal')
 
 # Mapping
 gender_mapping = {'Male': 0, 'Female': 1}

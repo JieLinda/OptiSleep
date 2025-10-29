@@ -1,7 +1,7 @@
 import streamlit as st
 
 st.set_page_config(page_title="Sleep Disorder Predictor", layout="wide")
-st.title("Sleep Disorder Prediction App")
+st.title("Sleep Disorder Prediction and Lifestyle Optimization App")
 
 st.markdown("""
 Selamat datang di aplikasi prediksi gangguan tidur berbasis KNN, ANN, dan Genetic Algorithm.
